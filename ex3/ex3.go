@@ -21,8 +21,9 @@ type FlagCash struct {
 }
 
 type Sort struct {
-	flags FlagCash
-	cashe [][]string
+	flags    FlagCash
+	cashe    [][]string
+	filename string
 }
 
 func (sort *Sort) parcseFlagK(str string) error {
@@ -39,6 +40,7 @@ func (sort *Sort) parcseFlagK(str string) error {
 
 func (sort *Sort) checkFlag() error {
 	argsWithoutProg := os.Args[1:]
+	sort.filename = argsWithoutProg[len(argsWithoutProg)-1]
 	if len(argsWithoutProg) == 1 {
 		return nil
 	}
@@ -223,7 +225,7 @@ func (s *Sort) Write(arr []string) {
 			fmt.Println("Disorder")
 		}
 	}
-	// s.Print()
+	s.Print()
 }
 
 func (s *Sort) Print() {
@@ -246,7 +248,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	arr, err := readFile("hello.txt")
+	arr, err := readFile(sort.filename)
 	if err != nil {
 		fmt.Println(err)
 	}
