@@ -66,7 +66,7 @@ func (cut *Cut) ParceRow(str string) error {
 	if number <= 0 {
 		return errors.New("illegal list value")
 	}
-	cut.value = number
+	cut.value = number - 1
 	return nil
 }
 
@@ -85,24 +85,47 @@ func (cut *Cut) ReadFile(filename string) error {
 
 func (cut *Cut) FindIndex() {
 	for _, val := range cut.cashe {
-		cut.matrix = append(cut.matrix, strings.Split(val, "\t"))
+		cut.matrix = append(cut.matrix, strings.Split(val, cut.delimiter))
 	}
 }
 
 func (cut *Cut) Print() {
 	if len(cut.matrix[0])-1 < cut.value {
-		for i := 0; i < len(cut.matrix); i++ {
-			fmt.Println()
-		}
+		cut.PrintEmpty()
 		return
 	}
+	if cut.flags.s {
+		cut.PrintFlagS()
+		return
+	}
+	cut.PrintBasic()
+}
+
+func (cut *Cut) PrintEmpty() {
 	for i := 0; i < len(cut.matrix); i++ {
-		fmt.Println(cut.matrix[i][cut.value])
+		fmt.Println()
+	}
+}
+
+func (cut *Cut) PrintFlagS() {
+	for _, str := range cut.matrix {
+		if len(str) < 2 {
+			continue
+		}
+		fmt.Println(str[cut.value])
+	}
+}
+
+func (cut *Cut) PrintBasic() {
+	for _, str := range cut.matrix {
+		fmt.Println(str[cut.value])
 	}
 }
 
 func main() {
-	cut := Cut{}
+	cut := Cut{
+		delimiter: "\t",
+	}
 	err := cut.CheckFlag()
 	if err != nil {
 		fmt.Println(err)
