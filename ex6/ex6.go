@@ -1,0 +1,118 @@
+package main
+
+import (
+	"bufio"
+	"errors"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+)
+
+type Flag struct {
+	f bool
+	d bool
+	s bool
+}
+
+type Cut struct {
+	flags     Flag
+	value     int
+	delimiter string
+	cashe     []string
+	matrix    [][]string
+	filename  string
+}
+
+func (cut *Cut) CheckFlag() error {
+	argsWithoutProg := os.Args[1:]
+	if len(argsWithoutProg) <= 1 {
+		return errors.New("illegal option")
+	}
+	for i := 0; i < len(argsWithoutProg)-1; i++ {
+		switch argsWithoutProg[i] {
+		case "-f":
+			cut.flags.f = true
+			i++
+			err := cut.ParceRow(argsWithoutProg[i])
+			if err != nil {
+				return err
+			}
+		case "-d":
+			cut.flags.d = true
+			i++
+			cut.delimiter = argsWithoutProg[i]
+			if i == len(argsWithoutProg)-1 {
+				return errors.New("bad delimiter")
+			}
+		case "-s":
+			cut.flags.s = true
+		default:
+			return errors.New("illegal option")
+		}
+	}
+	cut.filename = argsWithoutProg[len(argsWithoutProg)-1]
+	if !cut.flags.f {
+		return errors.New("cut -f list [-s] [-d delim] [file ...]")
+	}
+	return nil
+}
+
+func (cut *Cut) ParceRow(str string) error {
+	number, err := strconv.Atoi(str)
+	if err != nil {
+		return errors.New("illegal list value")
+	}
+	if number <= 0 {
+		return errors.New("illegal list value")
+	}
+	cut.value = number
+	return nil
+}
+
+func (cut *Cut) ReadFile(filename string) error {
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		cut.cashe = append(cut.cashe, scanner.Text())
+	}
+	return nil
+}
+
+func (cut *Cut) FindIndex() {
+	for _, val := range cut.cashe {
+		cut.matrix = append(cut.matrix, strings.Split(val, "\t"))
+	}
+}
+
+func (cut *Cut) Print() {
+	if len(cut.matrix[0])-1 < cut.value {
+		for i := 0; i < len(cut.matrix); i++ {
+			fmt.Println()
+		}
+		return
+	}
+	for i := 0; i < len(cut.matrix); i++ {
+		fmt.Println(cut.matrix[i][cut.value])
+	}
+}
+
+func main() {
+	cut := Cut{}
+	err := cut.CheckFlag()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	err = cut.ReadFile(cut.filename)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	cut.FindIndex()
+	cut.Print()
+}
