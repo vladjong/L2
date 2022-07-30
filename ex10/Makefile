@@ -1,4 +1,4 @@
 all:
-	go build -o telnet ex10.go 
+	go build -o go-telnet ex10.go 
 clean:
-	rm -rf telnet
+	rm -rf go-telnet

@@ -2,11 +2,13 @@ package main
 
 import (
 	"bufio"
-	"flag"
+	"errors"
 	"fmt"
 	"io"
 	"net"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -18,17 +20,6 @@ type Client struct {
 	port    string
 	timeout time.Duration
 	conn    net.Conn
-}
-
-/*
-	Конструктор клиента
-*/
-func NewClient(host string, port string, timeout time.Duration) *Client {
-	return &Client{
-		host:    host,
-		port:    port,
-		timeout: timeout,
-	}
 }
 
 /*
@@ -77,13 +68,33 @@ func (client *Client) sendRequest() {
 	}
 }
 
+func (client *Client) checkFlag() error {
+	argsWithoutProg := os.Args[1:]
+	if len(argsWithoutProg) <= 1 {
+		return errors.New("illegal option")
+	}
+	client.timeout = time.Duration(5) * time.Second
+	order := 0
+	if len(argsWithoutProg) == 3 {
+		client.parceTimeout(argsWithoutProg)
+		order++
+	}
+	client.host = argsWithoutProg[order]
+	order++
+	client.port = argsWithoutProg[order]
+	return nil
+}
+
+func (client *Client) parceTimeout(argsWithoutProg []string) {
+	strs := strings.Split(argsWithoutProg[0], "=")
+	args := strings.Split(strs[1], "s")
+	timeout, _ := strconv.Atoi(args[0])
+	client.timeout = time.Duration(timeout) * time.Second
+}
+
 func main() {
-	timeoutValue := flag.Uint("timeout", 10, "conn timeout")
-	timeout := time.Duration(*timeoutValue) * time.Second
-	flag.Parse()
-	host := flag.Arg(0)
-	port := flag.Arg(1)
-	client := NewClient(host, port, timeout)
+	client := Client{}
+	client.checkFlag()
 	err := client.ConnectionTCP()
 	if err != nil {
 		fmt.Println(err)
