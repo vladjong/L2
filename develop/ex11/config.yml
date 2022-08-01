@@ -1,0 +1,7 @@
+---
+
+is_debug: true
+listen:
+  type: port
+  bind_io: 0.0.0.0
+  port: 8000
