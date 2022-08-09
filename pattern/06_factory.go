@@ -70,14 +70,14 @@ func getDevice(device string) (AppleI, error) {
 	return nil, fmt.Errorf("Wrong device type")
 }
 
+func printDetails(d AppleI) {
+	fmt.Println("Device:", d.GetName())
+	fmt.Println("Category:", d.GetCategory())
+}
+
 func main() {
 	iphone, _ := getDevice("iphone")
 	macbook, _ := getDevice("macbook")
 	printDetails(iphone)
 	printDetails(macbook)
-}
-
-func printDetails(d AppleI) {
-	fmt.Println("Gun:", d.GetName())
-	fmt.Println("Category:", d.GetCategory())
 }
